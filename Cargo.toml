@@ -19,24 +19,24 @@ hex = "0.4.3"
 interactive = ["crossterm"]
 
 [patch.crates-io.base58check]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 features=["serde"]
 
 [patch.crates-io.bitcoin_hashes]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-internals]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-io]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-units]
