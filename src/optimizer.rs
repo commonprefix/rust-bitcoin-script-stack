@@ -1,8 +1,9 @@
+use bitcoin::opcodes::all::*;
+use bitcoin::script::{ScriptBufExt, ScriptExt};
 use bitcoin::ScriptBuf;
 use bitcoin::{script::Instruction, Opcode};
-pub use bitcoin_script::script;
 pub use bitcoin_script::builder::StructuredScript as Script;
-use bitcoin::opcodes::all::*;
+pub use bitcoin_script::script;
 
 fn to_vec(script: &ScriptBuf) -> Vec<Instruction<'_>> {
     let mut instructions = Vec::new();
@@ -33,11 +34,12 @@ fn get_digit(instruction: &Instruction) -> Option<u8> {
             let v = op.to_u8();
             match v {
                 0x0 => return Some(0), //op_0
-                0x51..=0x60 => return Some(v-0x50),
-                _ => return None
+                0x51..=0x60 => return Some(v - 0x50),
+                _ => return None,
             }
-        }, 
-        Instruction::PushBytes(x) => { // zero bytes is op_0
+        }
+        Instruction::PushBytes(x) => {
+            // zero bytes is op_0
             if x.as_bytes().len() == 0 {
                 return Some(0);
             }
@@ -49,7 +51,7 @@ fn get_digit(instruction: &Instruction) -> Option<u8> {
 fn get_opcode(instruction: &Instruction) -> Option<Opcode> {
     match instruction {
         Instruction::Op(op) => Some(op.clone()),
-        _ => None
+        _ => None,
     }
 }
 
@@ -75,7 +77,7 @@ fn replace(instructions: &mut Vec<Instruction>, mut i: usize, count: usize) -> u
         5 => vec![1, 2, 2],
         6 => vec![1, 2, 3],
         7 => vec![1, 2, 2, 2],
-        8 => vec![1, 2, 2, 3], 
+        8 => vec![1, 2, 2, 3],
         9 => vec![1, 2, 3, 3],
         10 => vec![1, 2, 2, 2, 3],
         11 => vec![1, 2, 2, 3, 3],
@@ -83,26 +85,30 @@ fn replace(instructions: &mut Vec<Instruction>, mut i: usize, count: usize) -> u
         13 => vec![1, 2, 2, 2, 3, 3],
         14 => vec![1, 2, 2, 3, 3, 3],
         15 => vec![1, 2, 3, 3, 3, 3],
-        _ => return 0
+        _ => return 0,
     };
 
     let new_size = ops.len();
     let drain = count - new_size;
 
     for op in ops {
-        instructions[i+1] = match op {
+        instructions[i + 1] = match op {
             1 => Instruction::Op(OP_DUP),
             2 => Instruction::Op(OP_2DUP),
             3 => Instruction::Op(OP_3DUP),
-            _ => panic!("unexpected op")
+            _ => panic!("unexpected op"),
         };
         i += 1;
     }
-    instructions.drain(i+1 .. i+1+drain);
+    instructions.drain(i + 1..i + 1 + drain);
     new_size
 }
 
-pub fn opcode_transformation( opcode: &Opcode, previous_opcode: Option<Opcode>, previous_digit: Option<u8>) -> Option<Option<Opcode>> {
+pub fn opcode_transformation(
+    opcode: &Opcode,
+    previous_opcode: Option<Opcode>,
+    previous_digit: Option<u8>,
+) -> Option<Option<Opcode>> {
     match (opcode, previous_opcode, previous_digit) {
         (&OP_FROMALTSTACK, Some(OP_TOALTSTACK), None) => Some(None),
         (&OP_PICK, None, Some(0)) => Some(Some(OP_DUP)),
@@ -110,25 +116,27 @@ pub fn opcode_transformation( opcode: &Opcode, previous_opcode: Option<Opcode>, 
         (&OP_ROLL, None, Some(0)) => Some(None),
         (&OP_ROLL, None, Some(1)) => Some(Some(OP_SWAP)),
         (&OP_ROLL, None, Some(2)) => Some(Some(OP_ROT)),
-        _ => None
+        _ => None,
     }
-} 
+}
 
 pub fn optimize(script: ScriptBuf) -> ScriptBuf {
-
     let mut instructions = to_vec(&script);
     let mut i = 0;
     while i < instructions.len() {
-
         if i > 0 {
             if let Some(opcode) = get_opcode(&instructions[i]) {
-                if let Some(transformation)  = opcode_transformation(&opcode, get_opcode(&instructions[i-1]), get_digit(&instructions[i-1])) {
+                if let Some(transformation) = opcode_transformation(
+                    &opcode,
+                    get_opcode(&instructions[i - 1]),
+                    get_digit(&instructions[i - 1]),
+                ) {
                     if let Some(new_opcode) = transformation {
-                        instructions[i-1] = Instruction::Op(new_opcode);
-                        instructions.drain(i..i+1);
+                        instructions[i - 1] = Instruction::Op(new_opcode);
+                        instructions.drain(i..i + 1);
                     } else {
-                        instructions.drain(i-1..i+1);
-                        i-=1;
+                        instructions.drain(i - 1..i + 1);
+                        i -= 1;
                     }
                     continue;
                 }
@@ -142,19 +150,14 @@ pub fn optimize(script: ScriptBuf) -> ScriptBuf {
             i += new_size;
         }
 
-
         i += 1;
     }
 
-
     from_vec(instructions)
-
 }
-
 
 #[cfg(test)]
 mod tests {
-
 
     use crate::stack::StackTracker;
 
@@ -174,7 +177,6 @@ mod tests {
         stack.get_script()
     }
 
-
     fn duplicated_script(n: usize) -> ScriptBuf {
         let mut stack = StackTracker::new();
         for _ in 0..n {
@@ -185,13 +187,12 @@ mod tests {
 
     #[test]
     fn test_dup() {
-
         let mut stack = StackTracker::new();
         stack.number(0);
         stack.op_dup();
         stack.op_2dup();
         assert_eq!(optimize(duplicated_script(4)), stack.get_script().compile());
-        
+
         let mut stack = StackTracker::new();
         stack.number(0);
         stack.op_dup();
@@ -207,8 +208,10 @@ mod tests {
         stack.op_3dup();
         stack.op_3dup();
         stack.op_3dup();
-        assert_eq!(optimize(duplicated_script(16)), stack.get_script().compile());
-        
+        assert_eq!(
+            optimize(duplicated_script(16)),
+            stack.get_script().compile()
+        );
     }
 
     #[test]
@@ -230,10 +233,11 @@ mod tests {
         stack2.op_dup();
         stack2.op_2dup();
 
-        assert_eq!(optimize(stack.get_script().compile()), stack2.get_script().compile());
- 
+        assert_eq!(
+            optimize(stack.get_script().compile()),
+            stack2.get_script().compile()
+        );
     }
-
 
     #[test]
     fn test_pick_0() {
@@ -249,9 +253,8 @@ mod tests {
         assert!(stack.run().success);
 
         let optimized = optimize(stack.get_script().compile());
-        let ret= debug_script(optimized);
+        let ret = debug_script(optimized);
         assert!(ret.0.result().unwrap().success);
-
     }
 
     #[test]
@@ -269,9 +272,8 @@ mod tests {
 
         let optimized = optimize(stack.get_script().compile());
         println!("{:?}", optimized.to_asm_string());
-        let ret= debug_script(optimized);
+        let ret = debug_script(optimized);
         assert!(ret.0.result().unwrap().success);
-
     }
 
     #[test]
@@ -288,9 +290,8 @@ mod tests {
         let optimized = optimize(stack.get_script().compile());
         println!("{:?}", stack.get_script().compile().to_asm_string());
         println!("{:?}", optimized.to_asm_string());
-        let ret= debug_script(optimized);
+        let ret = debug_script(optimized);
         assert!(ret.0.result().unwrap().success);
-
     }
 
     #[test]
@@ -309,9 +310,8 @@ mod tests {
         let optimized = optimize(stack.get_script().compile());
         println!("{:?}", stack.get_script().compile().to_asm_string());
         println!("{:?}", optimized.to_asm_string());
-        let ret= debug_script(optimized);
+        let ret = debug_script(optimized);
         assert!(ret.0.result().unwrap().success);
-
     }
 
     #[test]
@@ -331,15 +331,16 @@ mod tests {
         let optimized = optimize(stack.get_script().compile());
         println!("{:?}", stack.get_script().compile().to_asm_string());
         println!("{:?}", optimized.to_asm_string());
-        let ret= debug_script(optimized);
+        let ret = debug_script(optimized);
         assert!(ret.0.result().unwrap().success);
-
     }
     #[test]
     fn test_from_to() {
-        let script =  sample_script().compile();
+        let script = sample_script().compile();
         let new_script = from_vec(to_vec(&script));
-        assert_eq!(script.as_script().to_asm_string(), new_script.as_script().to_asm_string());
+        assert_eq!(
+            script.as_script().to_asm_string(),
+            new_script.as_script().to_asm_string()
+        );
     }
-
 }

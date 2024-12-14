@@ -18,7 +18,7 @@ hex = "0.4.3"
 [features]
 interactive = ["crossterm"]
 
-[patch.crates-io.base58check]
+[patch.crates-io.base58ck]
 git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
@@ -40,5 +40,9 @@ git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-units]
-git = "https://github.com/rust-bitcoin/rust-bitcoin"
+git = "https://github.com/storopoli/rust-bitcoin"
+branch = "bitvm"
+
+[patch.crates-io.bitcoin-primitives]
+git = "https://github.com/storopoli/rust-bitcoin"
 branch = "bitvm"
