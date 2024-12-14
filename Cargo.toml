@@ -10,7 +10,7 @@ repository = "https://github.com/FairgateLabs/rust-bitcoin-script-stack"
 
 [dependencies]
 bitcoin-script = { git = "https://github.com/commonprefix/rust-bitcoin-script", branch = "StructuredScript" }
-bitcoin = { git = "https://github.com/storopoli/rust-bitcoin", branch = "bitvm", features=["serde"] }
+bitcoin = { git = "https://github.com/commonprefix/rust-bitcoin-storopoli", branch = "bitvm", features=["serde"] }
 bitcoin-scriptexec = { git = "https://github.com/commonprefix/rust-bitcoin-scriptexec/"}
 crossterm = { version = "0.27.0", optional = true}
 hex = "0.4.3"
@@ -19,30 +19,30 @@ hex = "0.4.3"
 interactive = ["crossterm"]
 
 [patch.crates-io.base58ck]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 features=["serde"]
 
 [patch.crates-io.bitcoin_hashes]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-internals]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-io]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-units]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
 
 [patch.crates-io.bitcoin-primitives]
-git = "https://github.com/storopoli/rust-bitcoin"
+git = "https://github.com/commonprefix/rust-bitcoin-storopoli"
 branch = "bitvm"
